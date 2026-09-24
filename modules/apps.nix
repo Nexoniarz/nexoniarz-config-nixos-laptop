@@ -1,16 +1,46 @@
 { config, pkgs, ... }:
 
+let
+
+  # Both SDR++ and rtl_433 default to supporting every radio ever made, which
+  # drags in UHD (USRP firmware), BladeRF and LimeSuite — ~1.5 GB for
+  # hardware we don't own. These two overrides cut that down to the RTL-SDR paths.
+
+  soapysdrLean = pkgs.soapysdr.override {
+    extraPackages = with pkgs; [
+      soapyrtlsdr
+      soapyremote
+    ];
+  };
+
+  rtl433Lean = pkgs.rtl_433.override {
+    soapysdr-with-plugins = soapysdrLean;
+  };
+
+  # Leaves the RTL-SDR, rtl_tcp, file and network sources on.
+  sdrppLean = pkgs.sdrpp.override {
+    soapy_source = false;
+    bladerf_source = false;
+    limesdr_source = false;
+    plutosdr_source = false;
+    airspy_source = false;
+    airspyhf_source = false;
+    hermes_source = false;
+    rfspace_source = false;
+    dragonlabs_source = false;
+    spectran_http_source = false;
+  };
+
+in
 {
-  # Every installed package — GUI apps, CLI tools, and dev toolchains alike.
-  # If it's "install X", it goes here.
   users.users."nexoniarz".packages = with pkgs; [
-    # Hardware control (Pantheon itself ships Files/Terminal/Screenshot/
-    # notifications/dock/launcher — see services.desktopManager.pantheon
-    # in modules/desktop.nix, nothing to list here for those)
-    brightnessctl              # Backlight brightness (internal laptop panel)
-    ddcutil                    # DDC/CI brightness (external monitors)
-    lm_sensors                 # sensors-detect helps ddcutil find I2C buses; also feeds asusctl
-    networkmanager             # nmcli, for the Wi-Fi hotspot script
+
+    tumbler
+    brightnessctl        # Backlight on the internal panel
+    ddcutil              # DDC/CI brightness on an external monitor
+    lm_sensors           # sensors-detect also helps ddcutil find its I2C buses
+    networkmanager       # nmcli, for the Wi-Fi hotspot script
+    xdg-user-dirs
 
     # Apps
     blender
@@ -22,35 +52,65 @@
     vlc
     filezilla
     chromium
+    obs-studio
+    sdrppLean
+    rtl433Lean
+    lmms
 
     # Games
     prismlauncher
-    pkgs.osu-lazer-bin
+    osu-lazer-bin
 
-    # Dev: compilers, runtimes, languages
+    # Dev
     glibc
     musl
     cmake
-    gnumake # Provides the 'make' command
+    gnumake
     gcc
     python3
     openjdk25
-    claude-code # AI Developer Assistant
+    go
+    claude-code
   ];
 
-  # Global command-line utilities available everywhere
   environment.systemPackages = with pkgs; [
     git
-    gh # GitHub CLI — was only installed ad-hoc before (login didn't survive)
+    gh
     vim
     fastfetch
     gparted
+    efibootmgr
     firejail
     gnupg
     lmstudio
+    kdePackages.ark
     p7zip
     unzip
     unrar
-    libreoffice # GTK3 build — matches Pantheon's native GTK theming, unlike the Qt build
+    kdePackages.gwenview
+    kdePackages.kate
+    kdePackages.qqc2-desktop-style
+    linphonePackages.linphone-desktop
+    kdePackages.kcalc
+    kdePackages.okular
+    kdePackages.elisa
+    kdePackages.konsole
+    kdePackages.dolphin
+    kdePackages.plasma-systemmonitor
+    qt5.qtwayland
+    qt6.qtwayland
+    qemu
+    file
+  ];
+
+  # Lets non-Nix binaries (e.g. the Tor Browser bundle) find an FHS linker.
+  programs.nix-ld.enable = true;
+  programs.nix-ld.libraries = with pkgs; [
+    glib gtk3 gdk-pixbuf pango cairo atk
+    dbus dbus-glib fontconfig freetype
+    libx11 libxext libxrender libxtst
+    libxi libxcomposite libxdamage libxfixes
+    libxrandr libxcursor libxcb libxkbcommon
+    alsa-lib mesa zlib stdenv.cc.cc
   ];
 }
