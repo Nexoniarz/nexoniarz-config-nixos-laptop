@@ -1,7 +1,6 @@
 { config, pkgs, ... }:
 
 let
-  # Wrap external shell scripts into system executables
   vaultToggle = pkgs.writeShellScriptBin "vault-toggle" (builtins.readFile ./scripts/vault-toggle.sh);
   stripMetadata = pkgs.writeShellScriptBin "strip-metadata" (builtins.readFile ./scripts/strip-metadata.sh);
   brightnessCtl = pkgs.writeShellScriptBin "brightness-ctl" (builtins.readFile ./scripts/brightness-ctl.sh);
@@ -10,7 +9,6 @@ let
   weatherFetch = pkgs.writeShellScriptBin "weather-fetch" (builtins.readFile ./scripts/weather-fetch.sh);
 in
 {
-  # Install CLI dependencies required by the scripts
   environment.systemPackages = with pkgs; [
     gocryptfs
     exiftool
