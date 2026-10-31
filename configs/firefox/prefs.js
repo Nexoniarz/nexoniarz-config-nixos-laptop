@@ -102,9 +102,13 @@ pref("browser.safebrowsing.downloads.remote.enabled", false);
 
 /*** NETWORK ***/
 
-// DNS: use the system resolver (systemd-resolved with DNS-over-TLS) and
-// never let Firefox switch itself to its own DNS-over-HTTPS provider.
-pref("network.trr.mode", 5);
+// DNS-over-HTTPS through Quad9 (no logging, blocks known malware domains).
+// Mode 2: Quad9 first; if it fails, the system resolver (systemd-resolved,
+// itself DNS-over-TLS), so lookups are encrypted either way and pages don't
+// break when Quad9 has a bad moment. Mode 3 would allow Quad9 only.
+pref("network.trr.mode", 2);
+pref("network.trr.uri", "https://dns.quad9.net/dns-query");
+pref("network.trr.custom_uri", "https://dns.quad9.net/dns-query");
 
 // No preloading pages or DNS you didn't ask for.
 pref("network.dns.disablePrefetch", true);
