@@ -32,12 +32,20 @@ only the hardware differs.
 | `modules/audio.nix` | PipeWire |
 | `modules/desktop.nix` | Plasma, SDDM, fonts, theming |
 | `modules/users.nix` | Account, shell, Steam, Flatpak |
-| `modules/apps.nix` | Installed packages, nix-ld |
+| `modules/apps.nix` | Installed packages, nix-ld, AppImage support |
 | `modules/default-apps.nix` | MIME associations |
-| `modules/scripts.nix` | Custom scripts in `modules/scripts/` (vault, metadata stripping, brightness, Wi-Fi hotspot, telemetry, weather) |
+| `modules/scripts.nix` | Custom scripts in `modules/scripts/` (vault, metadata stripping, brightness, Wi-Fi hotspot, telemetry, weather, NexoPass) |
 | `modules/fastfetch.nix` | Installs `configs/fastfetch/config.jsonc` system-wide |
-| `modules/firefox.nix` | Firefox, with prefs from `configs/firefox/prefs.js` (reapplied each start, not locked) |
+| `modules/firefox.nix` | Firefox, with prefs from `configs/firefox/prefs.js` (reapplied each start, not locked), and its own font list without the Microsoft core fonts (against font fingerprinting) |
 | `configs/` | Plain app config files (Firefox prefs, fastfetch) used by the modules |
+
+## NexoPass
+
+`nexopass` (in `modules/scripts/`) derives site passwords from a master with Argon2id, so no password is ever stored. You can have several accounts, each with its own master and an encrypted site list (current versions plus an archive of old ones) in `~/.local/share/nexopass/accounts/`. One app password or PIN unlocks them all; a master is only typed to create or recover an account.
+
+Passwords of 5-15 words or 12-64 characters, "did you mean" for typos, "stay unlocked" for a few minutes (kernel keyring), encrypted export/import shared with the NexoPass Android app, and `nexopass settings`. Run `nexopass help` for everything else. Apache License 2.0.
+
+`nexopass-gui` is the [NexoPass](https://github.com/Nexoniarz/NexoPass) window (also on Android and Windows), fetched from its GitHub release. It uses the same files as `nexopass`, so both see the same accounts and app password.
 
 ---
 
